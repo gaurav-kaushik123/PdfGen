@@ -1,0 +1,230 @@
+@RequestMapping(value = "/getStatement", produces = { "text/plain" })
+	public ResponseEntity<byte[]> getStatement() throws MalformedURLException, IOException {
+	   
+		MyPdfImpl mpl = new MyPdfImpl();
+	    // generate the file
+	    String path = mpl.pdfGen();
+	    Path filePath = Paths.get(path);
+
+	    // retrieve contents of "C:/tmp/report.pdf" that were written in showHelp
+	    byte[] fileContent = Files.readAllBytes(filePath);
+
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_PDF);
+	    // Here you have to set the actual filename of your pdf
+	    String filename = "Account-Statement.pdf";
+	    headers.setContentDispositionFormData(filename, filename);
+	    headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+	    ResponseEntity<byte[]> response = new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+	    return response;
+	}
+  
+  ===========================================================
+  
+  package com.sbi.statement.layer4;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Date;
+
+import javax.servlet.http.HttpServletResponse;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.CMYKColor;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
+public class MyPdfImpl {
+	
+	 private static String USER_PASSWORD = "password";
+     private static String OWNER_PASSWORD = "lokesh";
+     Document document = null;
+     PdfWriter writer = null;
+     Font redFont = FontFactory.getFont(FontFactory.COURIER, 12, Font.BOLD, new CMYKColor(14,0,0,8));
+     
+     public void setDocument(Document doc)
+     {
+    	 this.document = doc;
+     }
+     
+     public Document getDocument()
+     {
+    	return this.document;
+     }
+	
+	public String pdfGen() throws MalformedURLException, IOException
+	   {
+		
+	      document = new Document();
+	      
+	      try
+	      {
+	    	  writer = PdfWriter.getInstance(document, new FileOutputStream("D:\\Pdfs\\HelloWorld-1111.pdf"));
+	    	  
+	    	  writer.setEncryption(USER_PASSWORD.getBytes(),
+		                 OWNER_PASSWORD.getBytes(), PdfWriter.ALLOW_PRINTING,
+		                 PdfWriter.ENCRYPTION_AES_128);
+	    	  
+	    	 
+	    	    //Set attributes here
+	    	    document.addAuthor("Gaurav Kaushik");
+	    	    document.addCreationDate();
+	    	    document.addCreator("HowToDoInJava.com");
+	    	    document.addTitle("Set Attribute Example");
+	    	    document.addSubject("An example to show how attributes can be added to pdf files.");
+	    	 
+	    	    /////
+	        
+	         document.open();
+	         document.add(new Paragraph("------SBI Statement Generation-------"));
+	         
+//	         Image image1 = Image.getInstance("C:\\Users\\PC-28\\Downloads\\Sbi_logo_PNG1.png");
+//
+//	         image1.setAbsolutePosition(10f, 10f);
+//	         image1.scaleAbsolute(80, 100);
+//	         document.add(image1);
+	         ////////////////
+	         
+	         PdfPTable table = new PdfPTable(7); // 7 columns.
+	         table.setWidthPercentage(90); //Width 100%
+	         table.setSpacingBefore(6f); //Space before table
+	         table.setSpacingAfter(6f); //Space after table
+	  
+	         //Set Column widths
+	         float[] columnWidths = {0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
+	         table.setWidths(columnWidths);
+	  
+	         PdfPCell cell1 = new PdfPCell(new Paragraph("Account No"));
+	         cell1.setBorderColor(BaseColor.BLUE);
+	         cell1.setPaddingLeft(10);
+	         cell1.setBackgroundColor (new BaseColor (52, 167, 244));     
+	         cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell1.setUseBorderPadding(true);
+	         table.addCell(cell1);
+	         
+	         PdfPCell cell2 = new PdfPCell(new Paragraph("Trans_Amt"));
+	         cell2.setBorderColor(BaseColor.BLUE);
+	         cell2.setPaddingLeft(10);
+	         cell2.setBackgroundColor (new BaseColor (52, 167, 244));
+	         cell2.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell2.setUseBorderPadding(true);
+	         table.addCell(cell2);
+	         
+	         PdfPCell cell3 = new PdfPCell(new Paragraph("Trans_Time"));
+	         cell3.setBorderColor(BaseColor.BLUE);
+	         cell3.setPaddingLeft(10);
+	         cell3.setBackgroundColor (new BaseColor (52, 167, 244));
+	         cell3.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell3.setUseBorderPadding(true);
+	         table.addCell(cell3);
+	         
+	         PdfPCell cell4 = new PdfPCell(new Paragraph("Ref_Acc"));
+	         cell4.setBorderColor(BaseColor.BLUE);
+	         cell4.setPaddingLeft(10);
+	         cell4.setBackgroundColor (new BaseColor (52, 167, 244));
+	         cell4.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell4.setUseBorderPadding(true);
+	         table.addCell(cell4);
+	         
+	         PdfPCell cell5 = new PdfPCell(new Paragraph("Acc_Holder"));
+	         cell5.setBorderColor(BaseColor.BLUE);
+	         cell5.setPaddingLeft(10);
+	         cell5.setBackgroundColor (new BaseColor (52, 167, 244));
+	         cell5.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell5.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell5.setUseBorderPadding(true);
+	         table.addCell(cell5);
+	         
+	         PdfPCell cell6 = new PdfPCell(new Paragraph("Acc_Type"));
+	         cell6.setBorderColor(BaseColor.BLUE);
+	         cell6.setPaddingLeft(10);
+	         cell6.setBackgroundColor (new BaseColor (52, 167, 244));
+	         cell6.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell6.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell6.setUseBorderPadding(true);
+	         table.addCell(cell6);
+	         
+	         PdfPCell cell7 = new PdfPCell(new Paragraph("Balance"));
+	         cell7.setBorderColor(BaseColor.BLUE);
+	         cell7.setPaddingLeft(10);
+	         cell7.setBackgroundColor (new BaseColor (52, 167, 244));
+	         cell7.setHorizontalAlignment(Element.ALIGN_CENTER);
+	         cell7.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	         cell7.setUseBorderPadding(true);
+	         table.addCell(cell7);
+//	       
+	         String[] s1 = {"123456789", "50000", "20-01-2022",  "987654321", "Ashwin Patel","C", "200000"};
+	         String[] s2 = {"123456788", "20000", "21-01-2022",  "987654322", "Rames Patel","D", "300000"};
+	         String[] s3 = {"123456787", "60000", "22-01-2022",  "987654323", "Mohan Patel","C", "400000"};
+	         String[] s4 = {"123456786", "40000", "23-01-2022",  "987654324", "Sohan Patel","D", "500000"};
+	         String[] s5 = {"123456785", "10000", "24-01-2022",  "987654325", "Rohan Patel","C", "600000"};
+	         String[] s6 = {"123456784", "50000", "10-01-2022",  "987654321", "Ashwin Patel","D", "700000"};
+	         String[] s7 = {"123456783", "20000", "21-01-2022",  "987654322", "Rames Patel","C", "800000"};
+	         String[] s8 = {"123456782", "60000", "12-01-2022",  "987654323", "Mohan Patel","D", "900000"};
+	         String[] s9 = {"123456781", "40000", "13-01-2022",  "987654324", "Sohan Patel","D", "50000"};
+	         String[] s10 = {"123456780", "10000", "14-01-2022",  "987654325", "Rohan Patel","C", "600000"};
+	         
+	         ArrayList<String[]> row=new ArrayList<String[]>();
+	         
+	         row.add(s1);
+	         row.add(s2);
+	         row.add(s3);
+	         row.add(s4);
+	         row.add(s5);
+	         row.add(s6);
+	         row.add(s7);
+	         row.add(s8);
+	         row.add(s9);
+	         row.add(s10);
+	         
+	         
+	         for(int i=0;i<row.size();i++) {
+	             String[] cols=row.get(i);
+	             for(int j=0;j<cols.length;j++){
+	            	 
+	            	 PdfPCell cellx = new PdfPCell(new Paragraph(cols[j]));
+	    	         cell1.setBorderColor(BaseColor.BLUE);
+	    	         cell1.setPaddingLeft(10);
+	    	         //cell1.setBackgroundColor (new BaseColor (140, 221, 8));     
+	    	         cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
+	    	         cell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	    	         cell1.setUseBorderPadding(true);
+	    	         table.addCell(cellx);
+	                 //table.addCell(cols[j]);
+	             }
+	           }
+	         
+	         
+	         
+	         document.add(table);
+       
+	         document.close();
+	         writer.close();
+	         
+	      } catch (DocumentException e)
+	      {
+	         e.printStackTrace();
+	      } catch (FileNotFoundException e)
+	      {
+	         e.printStackTrace();
+	      }
+	      return "D:\\Pdfs\\HelloWorld-1111.pdf";
+	   }
+
+}
+=============================================================
